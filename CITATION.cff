@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+title: "Is more anaemia flagged at national health screening in Korean districts where older adults live alone? Analysis code"
+authors:
+  - family-names: Kim
+    given-names: Seongdae
+    affiliation: Hongik University
+    orcid: "https://orcid.org/0000-0002-1525-0091"
+version: "1.0.0"
+date-released: 2026-11-16
+license: MIT
+repository-code: "https://github.com/Seongdae-Kim-Hongik/older-adults-alone-anaemia-screening-korea"
+doi: 10.5281/zenodo.24265670
