@@ -1,8 +1,6 @@
-# build_ejn_anem.py — European Journal of Nutrition(Springer Nature, SNAPP) Original Article 원고 조립(2026-11-16, 30호 ANEM).
-#  규정(link.springer.com/journal/394/submission-guidelines, 2026-11-16 열람): Original Article ≤50,000자(초록·키워드·표·캡션·참고 포함), 구조 초록 150-250(Purpose·Methods·Results·Conclusion),
-#   키워드 4-6, 제목면(제목·저자·소속·이메일·ORCID, Acknowledgments·Author contributions), 줄번호·쪽번호, 인용 [1-3], 참고문헌 Springer basic(저자 (연도) 제목. 약어 권:쪽. https://doi.org/),
-#   Statements and Declarations(Funding·Competing interests·Ethics approval·Consent·Data·Code availability·Author contributions) 참고문헌 앞, 그림 캡션 'Fig. 1' 볼드·끝 마침표 없음, ESM = Online Resource 1(ESM_1.pdf),
-#   LLM 사용은 Methods에 기재. 사용: figs_anem.py → build_ejn_anem.py → esm_anem.py → cover_anem.py → check_ejn_anem.py
+# build_mat_anem.py — Maturitas(Elsevier EM) Original article 원고 조립(2026-11-16, 30호 ANEM).
+#  규정(sciencedirect.com/journal/maturitas/publish/guide-for-authors, 2026-11-16 열람): 본문 2,000-3,000단어·참고 ≤30, 구조 초록 ≤250(Objectives·Study design·Main outcome measures·Results·Conclusions),
+#   키워드 1-6, Highlights 3-5(≤85자, 별도 파일), 번호 절, 인용 [n], Elsevier 번호 참고문헌, 그림 별도 파일, 지도 경계 문구, Acknowledgements는 참고문헌 바로 앞, GenAI 선언 절은 참고문헌 앞.
 import os, re, json
 from jkms_engine import JKMS
 from british import brit
@@ -11,7 +9,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); MS = os.path.dirname(HERE); O
 N = C.N; REFS = json.load(open(os.path.join(HERE, "refs_anem.json"), encoding="utf-8"))
 rdf = lambda f, d: open(os.path.join(OUT, f)).read().strip() if os.path.exists(os.path.join(OUT, f)) else d
 ZENODO = rdf("zenodo_doi.txt", "10.5281/zenodo.PENDING"); GITHUB = rdf("github_url.txt", "https://github.com/PENDING")
-TAG = "EJN_ANEM"; TITLE = C.TITLE
+TAG = "MAT_ANEM"; TITLE = C.TITLE
 ORCID = "0000-0002-1525-0091"
 AFFIL = "Department of Biohealth Convergence Open Sharing System, Hongik University, Seoul, Republic of Korea"
 ADDR = "Department of Biohealth Convergence Open Sharing System, Hongik University, 94 Wausan-ro, Mapo-gu, Seoul 04066, Republic of Korea"
@@ -37,20 +35,26 @@ def all_keys():
     return sorted(k for k in {k.strip().lstrip("@") for g in re.findall(r"\[(@[^\]]+)\]", src) for k in g.split(";")} if re.fullmatch(r"(web:)?[a-z][a-z0-9]*", k))
 KEYS = all_keys()
 
-def ref(k):   # Springer basic: Kim S, Lee J (2020) Title. J Abbrev 10:1–10. https://doi.org/...
+def _ini(n):   # "Besora-Moreno M" → "M. Besora-Moreno", "Kim HS" → "H.S. Kim"
+    p = n.rsplit(" ", 1)
+    if len(p) == 2 and p[1].isupper() and len(p[1]) <= 3: return ".".join(p[1]) + ". " + p[0]
+    return n
+def ref(k):   # Elsevier 번호: H.S. Ballard, Title, J Abbrev 13 (1989) 706–720. https://doi.org/...
     r = REFS[k]
-    if r["type"] == "web": return f"{r['authors']} ({r['year']}) {r['title']}. {r['url']}. Accessed {r['accessed']}"
-    au = r["authors"]; a = ", ".join(au) if len(au) <= 6 else ", ".join(au[:3]) + " et al"; t = r["title"].rstrip("."); t = t + ("" if t.endswith(("?", "!")) else ".")
-    s = f"{a} ({r['year']}) {t} {r['journal']}"
+    if r["type"] == "web": return f"{r['authors']}, {r['title']}, {r['year']}. {r['url']} (accessed {r['accessed']})."
+    au = [_ini(x) for x in r["authors"]]; a = ", ".join(au) if len(au) <= 6 else ", ".join(au[:6]) + ", et al."
+    t = r["title"].rstrip(".")
+    s = f"{a}, {t}, {r['journal']}"
     if r.get("vol"): s += f" {r['vol']}"
-    if r.get("pages"): s += f":{r['pages'].replace('-', chr(8211))}"
-    if r.get("doi"): s += f". https://doi.org/{r['doi']}"
+    s += f" ({r['year']})"
+    if r.get("pages"): s += f" {r['pages'].replace('-', chr(8211))}"
+    s += "."
+    if r.get("doi"): s += f" https://doi.org/{r['doi']}."
     return s
 
 class TX(JKMS):
     raw = False
     def _emit(self, p, text, sz=12, bold=False, italic=False):
-        if sz == 12: sz = 10   # EJN: plain 10-point Times Roman
         if not self.raw:
             text = brit(text); text = re.sub(r"(^|[\s(=])-(?=\d)", "\\1\u2212", text)
         return super()._emit(p, text, sz, bold, italic)
@@ -127,7 +131,7 @@ def tight(tb, fs):   # 가로 표 한 쪽(2026-11-12): 셀 줄간격 고정
             for p in c.paragraphs: p.paragraph_format.line_spacing_rule = WD_LINE_SPACING.EXACTLY; p.paragraph_format.line_spacing = Pt(round(1.6 * fs, 1)); p.paragraph_format.space_before = Pt(0); p.paragraph_format.space_after = Pt(0)
 FIGCAP = {
  1: "National positivity for suspected anaemia at general health screening by 5-year age group in men (A) and women (B), Korea, selected years 2011–2024. Positivity is the number of screening records flagged divided by the number of screening records with a recorded judgement in each sex and age group, shown on a log scale. Data from the national statistics portal.",
- 2: "Geography of the age- and sex-standardised anaemia ratio, Korea, 2011–2024. (A) Residual spatial rate ratio (RR) by district, the posterior mean of the exponentiated Besag–York–Mollié 2 district effect in the principal model. Solid outlines, hot spots (posterior probability of a residual spatial RR above 1 greater than 0.95); dashed outlines, cold spots (less than 0.05); thick lines, province boundaries. (B) Number of calendar windows (2011–2016, 2017–2024) in which each district was a hot or cold spot in the principal model refitted in each window; numbers of districts in parentheses. Sejong (hatched) was excluded. District boundaries as of 2024.",
+ 2: "Geography of the age- and sex-standardised anaemia ratio, Korea, 2011–2024. (A) Residual spatial rate ratio (RR) by district, the posterior mean of the exponentiated Besag–York–Mollié 2 district effect in the principal model. Solid outlines, hot spots (posterior probability of a residual spatial RR above 1 greater than 0.95); dashed outlines, cold spots (less than 0.05); thick lines, province boundaries. (B) Number of calendar windows (2011–2016, 2017–2024) in which each district was a hot or cold spot in the principal model refitted in each window; numbers of districts in parentheses. Sejong (hatched) was excluded. District boundaries as of 2024. Map lines delineate study areas and do not necessarily depict accepted national boundaries.",
  3: "Rate ratios per 1 standard deviation with 95% credible intervals for the four subset-stable district characteristics across models: the principal model, models with Knorr-Held type II (best fitting) and type IV space–time interactions, the principal model fitted to 2011–2016 and to 2017–2024 only, and the principal model with expected numbers computed from the resident population instead of attendees. The dotted vertical line marks a rate ratio of 1; log scale.",
 }
 APPX = ["Appendix S1. Supplementary methods: data sources, district harmonisation, standardisation and model specification",
@@ -140,55 +144,63 @@ APPX = ["Appendix S1. Supplementary methods: data sources, district harmonisatio
         "Appendix S8. STROBE checklist"]
 
 def counts():
-    aw = sum(len(t.split()) for t in C.ABSTRACT.values()) + 4
+    aw = sum(len(t.split()) for t in C.ABSTRACT.values()) + sum(len(h.split()) for h in C.ABSTRACT)
     secs = [("Introduction", C.INTRO), ("Methods", [h for h, _ in C.METHODS] + [t for _, t in C.METHODS]), ("Results", [h for h, _ in C.RESULTS] + [t for _, t in C.RESULTS]), ("Discussion", [x.replace("### ", "") for x in C.DISCUSSION])]
     bw = sum(len(h.split()) + sum(len(strip(t).split()) for t in ts) for h, ts in secs)
     return aw, bw
 
 AUTHCONTRIB = "Seongdae Kim conceived and designed the study, assembled and checked the data, performed the analysis, interpreted the results, wrote the manuscript and approved the final version."
+GENAI = "During the preparation of this work the author used Claude (Anthropic) and ChatGPT (OpenAI) only for translation and English-language editing. After using these tools, the author reviewed and edited the content as needed and takes full responsibility for the content of the published article."
+HIGHLIGHTS = ["Anaemia flagged at Korean health screening clustered in the south, 2011–2024",
+              "Districts with more older adults living alone had more anaemia flagged",
+              "Diabetes among attendees was associated, less robustly, with anaemia",
+              "Physical activity showed no credible district-level association",
+              "Ecological findings call for individual studies of diet and iron status"]
+assert 3 <= len(HIGHLIGHTS) <= 5 and all(len(h) <= 85 for h in HIGHLIGHTS), [len(h) for h in HIGHLIGHTS]
 def build():
     aw, bw = counts(); nref = len(KEYS)
     J = TX(cite="bracket")
     J.para(f"<b>{brit(TITLE)}</b>")
-    J.para("Seongdae Kim", before=12); J.para(AFFIL)
+    J.para("Seongdae Kim", before=12); J.para(ADDR)
     J.para(f"<b>Corresponding author:</b> Seongdae Kim, {ADDR}. Email: kimsd@hongik.ac.kr. ORCID: {ORCID}")
-    J.para("<b>Acknowledgements</b>", before=6); J.para("Not applicable.")
-    J.para("<b>Author contributions</b>", before=6); J.para(AUTHCONTRIB)
+    J.para(f"<b>Word count:</b> abstract {aw}; main text {bw:,}. <b>References:</b> {nref}. <b>Tables:</b> 2. <b>Figures:</b> 3.", before=6)
     J.page_break(); J.head("Abstract", 1)
-    for h, t in C.ABSTRACT.items(): J.para(f"<b>{h}</b> {t}")
-    J.raw = True; J.para(f"<b>Keywords</b> {'; '.join(C.KEYWORDS)}", before=6); J.raw = False
+    for h, t in C.ABSTRACT.items(): J.para(f"<b>{h}:</b> {t}")
+    J.raw = True; J.para(f"<b>Keywords:</b> {'; '.join(C.KEYWORDS)}", before=6); J.raw = False
     J.page_break(); J.counting = True
-    J.head("Introduction", 1)
+    J.head("1. Introduction", 1)
     for p in C.INTRO: J.para(pandoc_cites(p), indent=True)
-    J.head("Methods", 1)
-    for h, p in C.METHODS: J.head(h, 2); J.para(pandoc_cites(p), indent=True)
-    J.head("Results", 1)
-    for h, p in C.RESULTS: J.head(h, 2); J.para(pandoc_cites(p), indent=True)
-    J.head("Discussion", 1)
+    J.head("2. Methods", 1)
+    for i, (h, p) in enumerate(C.METHODS, 1): J.head(f"2.{i}. {h}", 2); J.para(pandoc_cites(p), indent=True)
+    J.head("3. Results", 1)
+    for i, (h, p) in enumerate(C.RESULTS, 1): J.head(f"3.{i}. {h}", 2); J.para(pandoc_cites(p), indent=True)
+    J.head("4. Discussion", 1); _d = 0
     for p in C.DISCUSSION:
-        if p.startswith("### Conclusion"): J.head("Conclusion", 1); continue
-        if p.startswith("### "): J.head(p[4:].strip(), 2); continue
+        if p.startswith("### Conclusion"): J.head("5. Conclusion", 1); continue
+        if p.startswith("### "): _d += 1; J.head(f"4.{_d}. {p[4:].strip()}", 2); continue
         J.para(pandoc_cites(p), indent=True)
     J.counting = False
-    J.head("Statements and Declarations", 1)
-    for h, t in (("Funding", FUNDING), ("Competing interests", COI), ("Ethics approval", ETHICS + " The study was conducted in accordance with the Declaration of Helsinki."),
-                 ("Consent to participate", CONSENT), ("Consent to publish", "Not applicable."), ("Data availability", data_statement()), ("Code availability", code_statement()), ("Author contributions", AUTHCONTRIB)):
-        J.head(h, 2); J.para(t)
+    for h, t in (("Contributors", AUTHCONTRIB), ("Conflict of interest", COI), ("Funding", FUNDING), ("Ethical approval", ETHICS + " " + CONSENT + " The study was conducted in accordance with the Declaration of Helsinki."),
+                 ("Provenance and peer review", "This article was not commissioned and was externally peer reviewed."), ("Research data (data sharing statement)", data_statement() + " " + code_statement()),
+                 ("Declaration of generative AI and AI-assisted technologies in the manuscript preparation process", GENAI), ("Acknowledgements", "None.")):
+        J.head(h, 1); J.para(t)
     assert sorted(J.cites) == KEYS, (set(J.cites) ^ set(KEYS))
     J.page_break(); J.head("References", 1); J.raw = True
-    for i, k in enumerate(J.cites, 1): J.para(f"{i}. " + ref(k))
+    for i, k in enumerate(J.cites, 1): J.para(f"[{i}] " + ref(k))
     J.raw = False
     J.page_break(); put_table(J, table1()); J.new_page("landscape"); put_table(J, table2(), fs=8); tight(J.doc.tables[-1], 8)
-    J.new_page("portrait"); J.head("Figures", 1)
-    from docx.shared import Cm
-    for k in sorted(FIGCAP):
-        if k > 1: J.page_break()
-        J.para("").add_run().add_picture(os.path.join(HERE, "figs", f"Fig_{k}.png"), width=Cm(16))
-        J.para(f"<b>Fig. {k}</b> {FIGCAP[k].rstrip('.')}")
-    J.head("Electronic supplementary material", 1)
-    J.para("Online Resource 1 (ESM_1.pdf) contains the following appendices:")
-    for a in APPX: J.para(a)
+    J.new_page("portrait"); J.head("Figure captions", 1)
+    for k in sorted(FIGCAP): J.para(f"<b>Fig. {k}.</b> {FIGCAP[k]}")
+    J.head("Supplementary material", 1)
+    J.para("Supplementary material (Supplementary_material.pdf) contains the following appendices:")
+    for a_ in APPX: J.para(a_)
     return J, aw, bw, nref
+
+def highlights():
+    from docx import Document
+    d = Document(); d.add_paragraph("Highlights")
+    for h in HIGHLIGHTS: d.add_paragraph(h, style="List Bullet")
+    d.core_properties.author = "Seongdae Kim"; d.save(os.path.join(OUT, "Highlights.docx"))
 
 def charcount(path):
     from docx import Document
@@ -204,8 +216,7 @@ def charcount(path):
 
 if __name__ == "__main__":
     J, aw, bw, nref = build()
-    assert 150 <= aw <= 250, aw; assert 4 <= len(C.KEYWORDS) <= 6
-    p = os.path.join(OUT, f"Manuscript_{TAG}.docx"); J.doc_title = TITLE; J.save(p)
-    nc = charcount(p); assert nc <= 50000, nc
-    open(os.path.join(OUT, "wordcount_ejn.txt"), "w").write(f"body_words={bw}\nabstract_words={aw}\nrefs={nref}\ntables=2\nfigures=3\ntitle_chars={len(TITLE)}\nchars_total={nc}\n")
-    print(f"body {bw} | abstract {aw} | refs {nref} | chars {nc} | title chars {len(TITLE)}")
+    assert aw <= 250, aw; assert 2000 <= bw <= 3000, bw; assert nref <= 30, nref
+    p = os.path.join(OUT, f"Manuscript_{TAG}.docx"); J.doc_title = TITLE; J.save(p); highlights()
+    open(os.path.join(OUT, "wordcount_mat.txt"), "w").write(f"body_words={bw}\nabstract_words={aw}\nrefs={nref}\ntables=2\nfigures=3\ntitle_chars={len(TITLE)}\n")
+    print(f"body {bw} | abstract {aw} | refs {nref} | title chars {len(TITLE)}")

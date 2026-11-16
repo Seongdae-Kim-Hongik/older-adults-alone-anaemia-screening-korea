@@ -32,7 +32,7 @@ def mapax(ax):
 def save(fig, k):
     p = os.path.join(FIG, f"Fig_{k}.png"); fig.savefig(p, dpi=DPI, facecolor="white"); plt.close(fig)
     im = Image.open(p).convert("RGB"); im.save(p, dpi=(DPI, DPI))
-    if not str(k).startswith("S"): im.save(os.path.join(OUTF, f"Fig{k}.tif"), dpi=(DPI, DPI), compression="tiff_lzw")
+    if not str(k).startswith("S"): im.save(os.path.join(OUTF, f"Figure_{k}.tif"), dpi=(DPI, DPI), compression="tiff_lzw")
     return im.size
 
 S6 = rd("S6_spatial_RR.csv"); assert len(S6) == 229

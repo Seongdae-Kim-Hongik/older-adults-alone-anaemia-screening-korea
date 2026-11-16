@@ -4,7 +4,7 @@ Analysis code for the manuscript
 
 > *Is more anaemia flagged at national health screening in Korean districts where older adults live alone?*
 
-Archived version: Zenodo, https://doi.org/10.5281/zenodo.24265670 (v1.0.0).
+Archived version: Zenodo, https://doi.org/10.5281/zenodo.24266208 (v1.0.1).
 
 This repository is public under the MIT licence.
 
@@ -16,7 +16,7 @@ This repository contains code only. The processed district-year data (master tab
 |---|---|
 | `01_스크립트/` | Analysis scripts (below) |
 | `04_분석/ANEM/sets_ANEM_*.json`, `config_ANEM_std3.json`, `hypothesis_table_ANEM.csv` | Covariates, expected directions, forced controls and model settings (principal model `std3`; sensitivity versions `s577`, `s2`, `s8`) |
-| `04_분석/ANEM/MS/` | Scripts that read the result tables and write every number, table and figure in the manuscript and Online Resource 1, including `content_anem.py`, which holds the manuscript text |
+| `04_분석/ANEM/MS/` | Scripts that read the result tables and write every number, table and figure in the manuscript and supplementary material, including `content_anem.py`, which holds the manuscript text |
 
 Folder and some column names are in Korean because the source tables are Korean; each script has a header comment describing its inputs and outputs.
 
@@ -40,7 +40,7 @@ Run from the repository root (set `ST_DATA_ROOT` and `ST_FBDZIP_CORRECTED` to th
 | 4 | `81_fit_inla.R ANEM` (`ST_VER=std3`, `ST_GRAPH=04_분석/ANEM/graph_593.graph`, `ST_THREADS=1`; see `04_분석/ANEM/run_std3_chain.sh`) | Principal model, set comparison, 200-subset multiverse, window models |
 | 5 | `85_window_maps.R`, `86_yearly_maps_ehsa.py` (with `86b_ehsa_modified_mk.py`), `87_window_grid.py` | Maps and emerging hot spot analysis |
 | 6 | `88g_sens_prep.py ANEM std3 INFECT,GCA`, `88g_sens_suite.R` (`GROUP=1..6`), `88h_ppc_varpart.R`, `88k_struct_kh.R` (nb, struct, review), `88k_struct_kh_anem.R` with `kh_constraints_anem.R` (kh), `89g_sens_combine.py` | Sensitivity analyses, comparison outcomes, Knorr-Held models, review outputs |
-| 7 | `04_분석/ANEM/MS/build/run_all_anem.sh` (`build_refs_anem.py`, `figs_anem.py`, `build_ejn_anem.py`, `esm_anem.py`, `check_ejn_anem.py`) | Manuscript, Online Resource 1, figures and checks |
+| 7 | `04_분석/ANEM/MS/build/run_all_anem.sh` (`build_refs_anem.py`, `figs_anem.py`, `build_mat_anem.py`, `esm_anem.py`, `check_mat_anem.py`) | Manuscript, supplementary material, highlights, figures and checks |
 
 The boundary file is found at `data/boundary/final.shp` by default; set `ST_SHP` to use another path.
 

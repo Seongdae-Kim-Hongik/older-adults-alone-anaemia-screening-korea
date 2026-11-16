@@ -6,8 +6,8 @@ authors:
     given-names: Seongdae
     affiliation: Hongik University
     orcid: "https://orcid.org/0000-0002-1525-0091"
-version: "1.0.0"
+version: "1.0.1"
 date-released: 2026-11-16
 license: MIT
 repository-code: "https://github.com/Seongdae-Kim-Hongik/older-adults-alone-anaemia-screening-korea"
-doi: 10.5281/zenodo.24265670
+doi: 10.5281/zenodo.24266208

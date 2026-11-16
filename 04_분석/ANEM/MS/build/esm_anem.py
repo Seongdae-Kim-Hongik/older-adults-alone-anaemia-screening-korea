@@ -1,9 +1,9 @@
-# esm_anem.py — European Journal of Nutrition Online Resource 1(ESM_1, Appendix S1-S8, 본문 첫 인용 순서) + STROBE(S8). 수치는 결과 CSV에서만(2026-11-16).
+# esm_anem.py — Maturitas Supplementary material( Appendix S1-S8, 본문 첫 인용 순서) + STROBE(S8). 수치는 결과 CSV에서만(2026-11-16).
 #  단일 익명이지만 보충 파일은 저자 정보 없이 제목만. 영국식 철자(TX._emit에서 brit 적용).
 import os, json, subprocess, pandas as pd
 from docx.shared import Cm
 import content_anem as C
-from build_ejn_anem import LABEL, GROUPS, TX, TITLE as DTITLE, foot_row, EXPECT
+from build_mat_anem import LABEL, GROUPS, TX, TITLE as DTITLE, foot_row, EXPECT
 from british import brit
 HERE = os.path.dirname(os.path.abspath(__file__)); MSD = os.path.dirname(HERE); OUT = os.path.join(MSD, "out"); B = os.path.dirname(MSD); RS = os.path.join(B, "results_std3")
 N = C.N
@@ -26,7 +26,7 @@ def TF(title, header, rows, foot="", fs=8, fixed=1, per=None):
         rr = [r if r and r[0] == "__H__" else [r[c] for c in cols] for r in rows]
         (None if (_f and n == 0) else J.page_break()); J.table_fit(tt, [header[c] for c in cols], rr, "", fs_max=fs)
         if foot: foot_row(J, foot, 8, 12)
-J.para("<b>Online Resource 1</b>"); J.para(f"Article title: {DTITLE}"); J.para("Journal: European Journal of Nutrition"); J.para("Author: Seongdae Kim"); J.para("Corresponding author: Seongdae Kim, Department of Biohealth Convergence Open Sharing System, Hongik University, Seoul, Republic of Korea; kimsd@hongik.ac.kr")
+J.para("<b>Supplementary material</b>"); J.para(f"Article title: {DTITLE}"); J.para("Journal: Maturitas"); J.para("Author: Seongdae Kim"); J.para("Corresponding author: Seongdae Kim, Department of Biohealth Convergence Open Sharing System, Hongik University, Seoul, Republic of Korea; kimsd@hongik.ac.kr")
 J.para("Contents: Appendix S1 (supplementary methods); Appendix S2 (covariates); Appendix S3 (panel checks); Appendix S4 (persistence, Figure S1); Appendix S5 (windows and the COVID-19 period); Appendix S6 (robustness, comparison outcomes, negative controls and model checks); Appendix S7 (post hoc analyses); Appendix S8 (STROBE checklist).")
 _MT = pd.read_csv(os.path.join(B, "panel_META_ANEM_std3.csv"), encoding="utf-8-sig").set_index("variable")
 _imp = lambda v: int(_MT.loc[v, "n_imputed_interp"] + _MT.loc[v, "n_imputed_sgg_mean"] + _MT.loc[v, "n_imputed_year_mean"])
@@ -129,6 +129,6 @@ CK = [("Title and abstract", "1", "Title; Abstract"), ("Background/rationale", "
 J.page_break(); J.head("Appendix S8. STROBE checklist", 2)
 J.table_fit("Table S7. STROBE checklist for this ecological study", ["Item", "No.", "Where reported"], [[a, b, c] for a, b, c in CK], "", fs_max=9)
 foot_row(J, "STROBE, Strengthening the Reporting of Observational Studies in Epidemiology.", 8, 12)
-ps = os.path.join(OUT, "ESM_1.docx"); J.doc_title = "Online Resource 1"; J.save(ps)
+ps = os.path.join(OUT, "Supplementary_material.docx"); J.doc_title = "Supplementary material"; J.save(ps)
 subprocess.run(["/opt/homebrew/bin/soffice", "--headless", "-env:UserInstallation=file:///tmp/lo_anem_esm", "--convert-to", "pdf", "--outdir", OUT, ps], check=True, capture_output=True)
 print("saved", os.path.basename(ps))
